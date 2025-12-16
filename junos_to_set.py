@@ -55,6 +55,7 @@ def get_set_config(filein, ignore_annotations, prefix=False):
     lannotations = []
     annotation = ""
     lres = ["set"]
+    litem = []
     for elem in data.split("\n"):
         elem = elem.strip()
         if elem == "" or elem.startswith("#"):
@@ -90,11 +91,18 @@ def get_set_config(filein, ignore_annotations, prefix=False):
                 lprotect[0] = "protect"
                 print_set_command(lprotect, clean_elem, prefix)
             if ";" in clean_elem:  # this is a leaf
-                print_set_command(lres, clean_elem.split(";")[0], prefix)
+                clean_elem = clean_elem.split(";")[0]
+                if len(litem) > 0:
+                    clean_elem = "%s %s" % (" ".join(litem), clean_elem)
+                    litem = []
+                print_set_command(lres, clean_elem, prefix)
             elif clean_elem == "}":  # Up one level remove parent
                 lres.pop()
             else:
-                lres.append(clean_elem)
+                if len(litem) > 0 or "[" in clean_elem:
+                    litem.append(clean_elem)
+                else:
+                    lres.append(clean_elem)
 
     if not ignore_annotations:
         # Print all annotations at the end
